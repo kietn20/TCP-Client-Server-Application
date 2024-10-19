@@ -1,29 +1,44 @@
 import socket
 
-def main():
+def start_server(host, port):
     # from slide 15 of week 9 TCP slides
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # using with statement to automatically close the socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+        # bind the socket to a specific address and port
+        server_socket.bind((host, port))
+        server_socket.listen()
 
-    # bind the socket to a specific address and port
-    server_address = ('localhost', 12345)  # these values can changed as needed
-    server_socket.bind(server_address)
+        print(f"Server is listening on {host}:{port}")
 
-    print(f"Server is listening on {server_address[0]}:{server_address[1]}")
+        while True:  # main loop to keep the server running
+            # wait for a client connection
+            client_socket, client_address = server_socket.accept()
+            print(f"New connection from {client_address}")
 
-    while True: # loop to keep the server running
-        # receive data from the client with max buffer size of 1024 bytes
-        data, client_address = server_socket.recvfrom(1024)
+            try:
+                # using with statement to automatically close the client socket
+                with client_socket:
+                    while True:  # inner loop for receiving messages
+                        # Receive data from the client
+                        data = client_socket.recv(1024)
+                        if not data:
+                            break
 
-        # print received message
-        print(f"Received message from {client_address}: {data.decode()}")
+                        print(f"Received from {client_address}: {data.decode()}")
 
-        # convert the message to uppercase
-        message = data.decode().upper()
+                        # convert the message to uppercase
+                        return_response = data.upper()
 
-        # send the uppercase message back to the client
-        server_socket.sendto(message.encode(), client_address)
+                        # send the response back to the client
+                        client_socket.send(return_response)
 
-        print(f"Sent uppercase message back to {client_address}")
+            except Exception as e:
+                print(f"Error handling client {client_address}: {e}")
+            finally:
+                print(f"Connection closed with client: {client_address}")
+
 
 if __name__ == "__main__":
-    main()
+    host = input("Enter the server IP address: ")
+    port = int(input("Enter the server port number: "))
+    start_server(host, port)
