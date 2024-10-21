@@ -20,19 +20,25 @@ def main():
                         break
 
                     # send data to server with utf-8 endcoding to destination address (aka server)
-                    client_socket.sendall(message.encode()) 
+                    client_socket.sendall(message.encode())
 
                     # receive response from server with max buffer size of 1024 bytes
                     data = client_socket.recv(1024)
 
-                    #print server's response
-                    print(f"Server response: {data.decode()}") # decode with utf-8
+                    # print server's response
+                    # decode with utf-8
+                    print(f"Server response: {data.decode()}")
 
                 print("Disconnected from server.")
                 break  # exit the main loop after disconnecting
 
         except ValueError:
             print("Error: Please enter a valid integer for port number.")
+        except socket.gaierror:
+            print("Error: Invalid IP address. Please enter a valid IP address.")
+        except ConnectionRefusedError:
+            print(
+                "Error: Connection refused. Make sure the server is running and the IP and port are correct.")
         except Exception as e:
             print(f"An error occurred: {e}")
 
